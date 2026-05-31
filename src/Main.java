@@ -404,16 +404,6 @@ public class Main {
         }
     }
 
-    static String join(ArrayList<String> cards) {
-        String out = "";
-        for (int i = 0; i < cards.size(); i++) {
-            out += i + ":" + cards.get(i);
-            if (i < cards.size() - 1) {
-                out += " ";
-            }
-        }
-        return out;
-    }
 
     static void selfTest() {
         int passed = 0;
