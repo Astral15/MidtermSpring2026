@@ -18,6 +18,7 @@ public class Main {
     static boolean quiet = false;
     static Random random = new Random();
     static Scanner scanner = new Scanner(System.in);
+    static ConsoleView view = new ConsoleView(false);
 
     public static void main(String[] args) {
         int bots = 3;
@@ -45,25 +46,21 @@ public class Main {
             }
         }
 
+        view = new ConsoleView(quiet);
         random = new Random(seed);
         setupPlayers(bots, human);
 
         if (playerNames.size() < 2 || playerNames.size() > 4) {
-            System.out.println("UNO needs 2 to 4 players.");
+            view.showPlayerCountError();
             return;
         }
 
         for (int g = 1; g <= games; g++) {
-            if (!quiet) {
-                System.out.println("\n=== Game " + g + " ===");
-            }
+            view.showGameHeader(g);
             playGame();
         }
 
-        System.out.println("\nFinal scores:");
-        for (int i = 0; i < playerNames.size(); i++) {
-            System.out.println(playerNames.get(i) + ": " + scores[i]);
-        }
+        view.showFinalScores(playerNames, scores);
     }
 
     static void setupPlayers(int bots, boolean human) {
@@ -127,10 +124,8 @@ public class Main {
             String name = playerNames.get(currentPlayer);
             ArrayList<String> hand = hands.get(currentPlayer);
 
-            if (!quiet) {
-                System.out.println("\nUp card: " + upCard + (calledColor.equals("") ? "" : " called " + calledColor));
-                System.out.println(name + " hand: " + join(hand));
-            }
+            view.showUpCard(upCard, calledColor);
+            view.showHand(name, hand);
 
             int chosen = -1;
             if (humanPlayers.get(currentPlayer).booleanValue()) {
@@ -142,9 +137,7 @@ public class Main {
             if (chosen == -1) {
                 String drawn = draw();
                 hand.add(drawn);
-                if (!quiet) {
-                    System.out.println(name + " draws " + drawn);
-                }
+                view.showDrawn(name, drawn);
                 if (isLegal(drawn, upCard, calledColor)) {
                     if (!humanPlayers.get(currentPlayer).booleanValue()) {
                         chosen = hand.size() - 1;
@@ -160,37 +153,17 @@ public class Main {
 
             if (chosen >= 0) {
                 if (chosen >= hand.size()) {
-                    if (!quiet) {
-                        System.out.println(name + " selected an invalid index and draws a penalty card.");
-                    }
+                    view.showPenaltyInvalidIndex(name);
                     hand.add(draw());
                     next();
                     continue;
                 }
 
                 String card = hand.get(chosen);
-                boolean ok = false;
-                String cardColor = color(card);
-                String upColor = color(upCard);
-                String cardRank = rank(card);
-                String upRank = rank(upCard);
-
-                if (card.startsWith("W")) {
-                    ok = true;
-                } else if (cardColor.equals(upColor)) {
-                    ok = true;
-                } else if (!calledColor.equals("") && cardColor.equals(calledColor)) {
-                    ok = true;
-                } else if (cardRank.equals(upRank) && !cardRank.equals("NUMBER")) {
-                    ok = true;
-                } else if (cardRank.equals("NUMBER") && upRank.equals("NUMBER") && number(card) == number(upCard)) {
-                    ok = true;
-                }
+                boolean ok = isLegal(card, upCard, calledColor);
 
                 if (!ok) {
-                    if (!quiet) {
-                        System.out.println(name + " tried illegal card " + card + " and draws a penalty card.");
-                    }
+                    view.showPenaltyIllegalCard(name, card);
                     hand.add(draw());
                     next();
                     continue;
@@ -200,9 +173,7 @@ public class Main {
                 discard.add(upCard);
                 upCard = card;
                 calledColor = "";
-                if (!quiet) {
-                    System.out.println(name + " plays " + card);
-                }
+                view.showPlayed(name, card);
 
                 if (card.equals("W") || card.equals("W4")) {
                     if (humanPlayers.get(currentPlayer).booleanValue()) {
@@ -210,13 +181,11 @@ public class Main {
                     } else {
                         calledColor = chooseBotColor(hand);
                     }
-                    if (!quiet) {
-                        System.out.println(name + " calls " + calledColor);
-                    }
+                    view.showColorCalled(name, calledColor);
                 }
 
-                if (hand.size() == 1 && !quiet) {
-                    System.out.println(name + " says UNO!");
+                if (hand.size() == 1) {
+                    view.showUno(name);
                 }
 
                 if (hand.size() == 0) {
@@ -229,9 +198,7 @@ public class Main {
                         }
                     }
                     scores[currentPlayer] += points;
-                    if (!quiet) {
-                        System.out.println(name + " wins and scores " + points);
-                    }
+                    view.showWin(name, points);
                     return;
                 }
 
@@ -240,9 +207,7 @@ public class Main {
                 next();
             }
         }
-        if (!quiet) {
-            System.out.println("Game stopped at safety limit.");
-        }
+        view.showSafetyLimit();
     }
 
     static void applyCardEffect(String card) {
@@ -279,9 +244,7 @@ public class Main {
         next();
         hands.get(currentPlayer).add(draw());
         hands.get(currentPlayer).add(draw());
-        if (!quiet) {
-            System.out.println(playerNames.get(currentPlayer) + " draws two.");
-        }
+        view.showDrawsTwo(playerNames.get(currentPlayer));
         next();
     }
 
@@ -290,9 +253,7 @@ public class Main {
         for (int i = 0; i < 4; i++) {
             hands.get(currentPlayer).add(draw());
         }
-        if (!quiet) {
-            System.out.println(playerNames.get(currentPlayer) + " draws four.");
-        }
+        view.showDrawsFour(playerNames.get(currentPlayer));
         next();
     }
 
