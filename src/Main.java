@@ -288,42 +288,28 @@ public class Main {
     }
 
     static int chooseBotCard(ArrayList<String> hand) {
+        // Priority 1: draw two
         for (int i = 0; i < hand.size(); i++) {
             String card = hand.get(i);
-            boolean ok = false;
-            if (card.startsWith("W")) ok = true;
-            else if (color(card).equals(color(upCard))) ok = true;
-            else if (!calledColor.equals("") && color(card).equals(calledColor)) ok = true;
-            else if (rank(card).equals(rank(upCard)) && !rank(card).equals("NUMBER")) ok = true;
-            else if (rank(card).equals("NUMBER") && rank(upCard).equals("NUMBER") && number(card) == number(upCard)) ok = true;
-            if (rank(card).equals("DRAW_TWO") && ok) {
+            if (rank(card).equals("DRAW_TWO") && isLegal(card, upCard, calledColor)) {
                 return i;
             }
         }
+        // Priority 2: skip
         for (int i = 0; i < hand.size(); i++) {
             String card = hand.get(i);
-            boolean ok = false;
-            if (card.startsWith("W")) ok = true;
-            else if (color(card).equals(color(upCard))) ok = true;
-            else if (!calledColor.equals("") && color(card).equals(calledColor)) ok = true;
-            else if (rank(card).equals(rank(upCard)) && !rank(card).equals("NUMBER")) ok = true;
-            else if (rank(card).equals("NUMBER") && rank(upCard).equals("NUMBER") && number(card) == number(upCard)) ok = true;
-            if (rank(card).equals("SKIP") && ok) {
+            if (rank(card).equals("SKIP") && isLegal(card, upCard, calledColor)) {
                 return i;
             }
         }
+        // Priority 3: number card
         for (int i = 0; i < hand.size(); i++) {
             String card = hand.get(i);
-            boolean ok = false;
-            if (card.startsWith("W")) ok = true;
-            else if (color(card).equals(color(upCard))) ok = true;
-            else if (!calledColor.equals("") && color(card).equals(calledColor)) ok = true;
-            else if (rank(card).equals(rank(upCard)) && !rank(card).equals("NUMBER")) ok = true;
-            else if (rank(card).equals("NUMBER") && rank(upCard).equals("NUMBER") && number(card) == number(upCard)) ok = true;
-            if (rank(card).equals("NUMBER") && ok) {
+            if (rank(card).equals("NUMBER") && isLegal(card, upCard, calledColor)) {
                 return i;
             }
         }
+        // Priority 4: wild (last resort)
         for (int i = 0; i < hand.size(); i++) {
             if (hand.get(i).startsWith("W")) {
                 return i;
